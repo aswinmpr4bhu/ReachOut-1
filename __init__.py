@@ -1,4 +1,6 @@
-from flask import Flask, jsonify, request
+from flask import Flask
+from flask import jsonify
+from flask import request
 from flask_pymongo import PyMongo
 
 app = Flask(__name__)
@@ -8,30 +10,33 @@ app.config['MONGO_URI'] = 'mongodb://localhost:27017/restdb'
 
 mongo = PyMongo(app)
 
+@app.route('/api/detail.get', methods=['GET'])
+def get_all_locations():
+  location = mongo.db.locations
+  output = []
+  for s in location.find():
+    output.append({'name' : s['name'], 'distance' : s['distance']})
+  return jsonify({'result' : output})
 
-location = 
-requirements =
+@app.route('/api/detail.get/', methods=['GET'])
+def get_one_location(name):
+  location = mongo.db.locations
+  s = location.find_one({'name' : name})
+  if s:
+    output = {'name' : s['name'], 'distance' : s['distance']}
+  else:
+    output = "No such name"
+  return jsonify({'result' : output})
 
-@app.route('/api/location.get', methods=['GET'])
-def get_tasks():
-    return jsonify({'location':location})
-
-@app.route('/api/requirements.get', methods=['GET'])
-def get_tasks():
-    return jsonify({'requirements':requirements})
-
-@app.route('/api/details.post', methods=['POST'])
-def create_task():
-    if not request.json or not 'title' in request.json:
-        abort(400)
-    task = {
-        '': tasks[-1]['id'] + 1,
-        '': request.json['title'],
-        'description': request.json.get('description', ""),
-        'done': False
-    }
-    tasks.append(task)
-    return jsonify({'task': task}), 201
+@app.route('/api/detail.post', methods=['POST'])
+def add_location():
+  location = mongo.db.locations
+  name = request.json['name']
+  distance = request.json['distance']
+  location_id = location.insert({'name': name, 'distance': distance})
+  new_location = location.find_one({'_id': location_id })
+  output = {'name' : new_location['name'], 'distance' : new_location['distance']}
+  return jsonify({'result' : output})
 
 if __name__ == '__main__':
     app.run(debug=True)
