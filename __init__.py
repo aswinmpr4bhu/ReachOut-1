@@ -2,9 +2,12 @@ from flask import Flask
 from flask import jsonify
 from flask import request
 from flask_pymongo import PyMongo
+from flask_cors import CORS
 import json
+import sys
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['MONGO_DBNAME'] = 'test'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/test'
@@ -12,22 +15,28 @@ app.config['MONGO_URI'] = 'mongodb://localhost:27017/test'
 mongo = PyMongo(app)
 
 @app.route('/api/getallreqs', methods=['GET'])
-def get_all_locations():
+def get_all_reqs():
   helpreq = mongo.db.helpreqs
   output = []
   for s in helpreq.find():
+    s["_id"] = "Placeholder"
+    output.append(s);
+  res = str({"data":output})
+  res = res.replace('\'','"')
+  print(res)
+  return res
+
+@app.route('/api/getalloffers', methods=['GET'])
+def get_all_offers():
+  helpoffer = mongo.db.helpoffers
+  output = []
+  for s in helpoffer.find():
+    s["_id"] = "Placeholder" 
     output.append(s)
-  print(output)
-  return str({"data":output})
-# @app.route('/api/detail.get/', methods=['GET'])
-# def get_one_location(name):
-#   location = mongo.db.locations
-#   s = location.find_one({'name' : name})
-#   if s:
-#     output = {'name' : s['name'], 'coord' : s['coord']}
-#   else:
-#     output = "No such name"
-#   return jsonify({'result' : output})
+  res = str({"data":output})
+  res = res.replace('\'','"')
+  print(res)
+  return res
 
 @app.route('/api/posthelpoffer', methods=['POST'])
 def add_offer():
